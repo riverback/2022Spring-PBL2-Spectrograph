@@ -49,6 +49,7 @@ class ThreadPlot(QThread):
                 break
             
             self.tmpdata = readlinedata(ser)
+            print(self.tmpdata)
             self.data[min(4096, max(0, self.tmpdata[0]))] = self.tmpdata[1] # 不知道为什么有时候会读取到超出预设的DACSignal，所以限制一下
             
             # 更新画图
@@ -121,6 +122,8 @@ class ThreadStopScan(QThread):
     def run(self):
         ui.printf("尝试发送暂停指令")
         threadPlot.flag = 1 # 见ThreadPlot中的run()
+        sendorder(ser, 0)
+        sendorder(ser, 0)
         self._signal.emit()
 
 
@@ -212,7 +215,7 @@ if __name__ == '__main__':
     ui.KillButton.clicked.connect(click_KillApp)
     
     # 串口通信
-    serialPort = "COM5"
+    serialPort = "COM8"
     baudRate = 115200
     ser = serial.Serial(serialPort, baudRate, timeout=0.5)
     
