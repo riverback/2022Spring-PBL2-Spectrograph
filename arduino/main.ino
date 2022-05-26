@@ -72,9 +72,11 @@ void scan() //控制镜子转动扫描一次；根据当前镜子位置决定扫
     switch (mirrorstatus) //根据mirrorstatus变量中的结果来判断当前镜子所处的位置，并决定扫描方向，实现往复扫描，节约时间
     {
     case MINIMUM_ANGLE:
-        for (int i = START_VAL; i < END_VAL; i++) //扫描
+        for (int i = START_VAL; i < END_VAL; i+=1) //扫描
         {
             writeToDAC(i);
+
+            // delay(50);
 
             pdRead = analogRead(pdOut);
 
@@ -86,12 +88,14 @@ void scan() //控制镜子转动扫描一次；根据当前镜子位置决定扫
         Serial.print(-1);
         Serial.print(' ');
         Serial.println(-1);
-        delay(10);
+        // delay(50);
         break;
     case MAX_ANGLE:
-        for (int i = END_VAL - 1; i >= START_VAL; i--) //如果镜子在最大角度就倒着扫描
+        for (int i = END_VAL - 1; i >= START_VAL; i-=1) //如果镜子在最大角度就倒着扫描
         {
             writeToDAC(i);
+
+            // delay(50);
 
             pdRead = analogRead(pdOut);
 
@@ -103,12 +107,12 @@ void scan() //控制镜子转动扫描一次；根据当前镜子位置决定扫
         Serial.print(-1);
         Serial.print(' ');
         Serial.println(-1);
-        delay(10);
+        // delay(50);
         break;
     case OTHER_ANGLE:
         writeToDAC(START_VAL); //先把镜子转到最小角度，等待到位后开始扫描
         mirrorstatus = MINIMUM_ANGLE;
-        delay(50);
+        // delay(50);
         scan();
         break;
     }
