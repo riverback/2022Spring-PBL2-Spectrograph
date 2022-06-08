@@ -42,7 +42,7 @@ def getRGB(dWave: float, maxPix=1, gamma=1):
     else:
         alpha = 0       #非可见区
 
-    return [maxPix*(c*alpha)**gamma for c in rgbs[p]]
+    return [maxPix*(c*alpha)**gamma for c in rgbs[p]] # 返回0-1浮点数范围的rgb值列表
 
 
 def drawSpec():
@@ -85,4 +85,5 @@ def line_chart(lx: np.ndarray, ly: np.ndarray):
 
 
 if __name__ == '__main__':
-    drawSpec()
+    # drawSpec()
+    print(getRGB(532.8))
