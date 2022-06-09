@@ -2,3 +2,7 @@
 ./vscode
 *.txt
 Spec_results/*
+*.png
+*.jpg
+*.jpeg
+*.npz
