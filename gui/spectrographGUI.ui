@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1036</width>
-    <height>628</height>
+    <width>1900</width>
+    <height>935</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>30</y>
-      <width>891</width>
-      <height>321</height>
+      <x>20</x>
+      <y>10</y>
+      <width>1281</width>
+      <height>451</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="Spectrograph_Window"/>
@@ -28,18 +28,18 @@
    <widget class="QTextBrowser" name="StdOutBrowser">
     <property name="geometry">
      <rect>
-      <x>565</x>
-      <y>370</y>
+      <x>1370</x>
+      <y>230</y>
       <width>411</width>
       <height>192</height>
      </rect>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>400</y>
+      <x>1370</x>
+      <y>40</y>
       <width>421</width>
       <height>141</height>
      </rect>
@@ -89,13 +89,24 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="verticalLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>470</y>
+      <width>1281</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="Spectrograph_Window_2"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1036</width>
+     <width>1900</width>
      <height>22</height>
     </rect>
    </property>
