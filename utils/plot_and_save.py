@@ -81,7 +81,14 @@ def line_chart(lx: np.ndarray, ly: np.ndarray):
     ax.plot()
 
 
-
+def save_image(lx, ly, path):
+    plt.figure()
+    plt.plot(lx, ly, label='spec data')
+    plt.legend() # 使图例生效
+    plt.xlabel('lambda')
+    plt.ylabel('relative intensity')
+    plt.savefig(path)
+    plt.show()
 
 
 if __name__ == '__main__':

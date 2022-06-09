@@ -14,7 +14,11 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from gui import spectrographGUI as sgui
 
 from utils.serialutils import sendorder, readlinedata, AngletoLambda
+from utils.MapItoLambda import Calibrate
+from utils.plot_and_save import save_image
 
+import matplotlib
+matplotlib.use('agg')
 
 class ThreadPlot(QThread):
     """画图线程"""
@@ -24,7 +28,7 @@ class ThreadPlot(QThread):
         super().__init__()
         
         # 数据初始化
-        self.data = np.zeros([4097, ]) # 读取到的光谱数据，也是需要绘制的数据
+        self.data = np.zeros([4096, ]) # 读取到的光谱数据，也是需要绘制的数据
         self.tmpdata = (0, 0) 
         # 临时数据，用于临时存储每次读到的数据，方便判断下位机状态，因为有时候会错误的读取到停止信号，其实并没有停止，因此需要和上一轮的信号对比
         
@@ -63,6 +67,23 @@ class ThreadPlot(QThread):
                 if readlinedata(ser) == (-2, -2):
                     ui.printf("扫描已暂停")
                     break
+        
+        ui.printf("尝试绘制光谱图")
+        start_time = time.ctime().replace(' ', '').replace(':', '')
+        ly = threadPlot.data
+        cal_i = np.array([1])
+        # cal_i = np.argmax(ly)
+        cal_lambda = np.array([532.0])
+        map_fun = Calibrate(cal_i, cal_lambda)
+        if map_fun is None:
+            print("map_fun is None")
+            return 
+        lx_lambda = np.empty_like(ly)
+        for i in range(lx_lambda.size):
+            lx_lambda[i] = map_fun(i)
+        save_path = f'results/spec_{start_time}.png'
+        save_image(lx_lambda, ly, save_path)
+        ui.printf(f"图片保存成功，名称为{save_path}")
         
         self.tmpdata = (0, 0)
                 
@@ -104,8 +125,10 @@ class ThreadSingleScan(QThread):
         cnt = sendorder(ser, 3)
         if cnt:
             ui.printf("单次扫描命令发送成功")
-            
+        
         click_Plot()
+        
+        print("单次扫描结束")
         
         # 待添加保存图片的功能
         
