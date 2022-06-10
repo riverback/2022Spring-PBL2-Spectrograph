@@ -28,7 +28,7 @@ class ThreadPlot(QThread):
         super().__init__()
         
         # 数据初始化
-        self.data = np.zeros([4096, ]) # 读取到的光谱数据，也是需要绘制的数据
+        self.data = np.zeros([4097, ]) # 读取到的光谱数据，也是需要绘制的数据
         self.tmpdata = (0, 0) 
         # 临时数据，用于临时存储每次读到的数据，方便判断下位机状态，因为有时候会错误的读取到停止信号，其实并没有停止，因此需要和上一轮的信号对比
         
@@ -43,8 +43,6 @@ class ThreadPlot(QThread):
         
         
     def run(self):
-        
-        self.flag = 0
         
         while self.tmpdata != (-2, -2):
             
@@ -67,23 +65,38 @@ class ThreadPlot(QThread):
                 if readlinedata(ser) == (-2, -2):
                     ui.printf("扫描已暂停")
                     break
+                
+        print("check flag")
+        print(self.flag)
+        print("###\n")
+                
+        if self.flag == 2: # 单次扫描的画图程序
         
-        ui.printf("尝试绘制光谱图")
-        start_time = time.ctime().replace(' ', '').replace(':', '')
-        ly = threadPlot.data
-        cal_i = np.array([1])
-        # cal_i = np.argmax(ly)
-        cal_lambda = np.array([532.0])
-        map_fun = Calibrate(cal_i, cal_lambda)
-        if map_fun is None:
-            print("map_fun is None")
-            return 
-        lx_lambda = np.empty_like(ly)
-        for i in range(lx_lambda.size):
-            lx_lambda[i] = map_fun(i)
-        save_path = f'results/spec_{start_time}.png'
-        save_image(lx_lambda, ly, save_path)
-        ui.printf(f"图片保存成功，名称为{save_path}")
+            ui.printf("尝试绘制光谱图")
+            start_time = time.ctime().replace(' ', '_').replace(':', '_')
+            ly = threadPlot.data
+            cal_i = np.array([1480, 2846])
+            # cal_i = np.array([np.argmax(ly)])
+            print("######", cal_i)
+            '''if cal_i.size > 1:
+                cal_i = np.array(cal_i[int(cal_i.size/2)])'''
+            # cal_lambda = np.array([445.0*1e-9])
+            cal_lambda = np.array([520.0*1e-9, 445*1e-9])
+            map_fun = Calibrate(cal_i, cal_lambda)
+            if map_fun is None:
+                print("map_fun is None")
+                return 
+            lx_lambda = np.empty_like(ly)
+            for i in range(lx_lambda.size):
+                lx_lambda[i] = map_fun(i)
+            save_path = f'results/spec_{start_time}.png'
+            
+            plot_start = time.time()
+            save_image(lx_lambda, ly, save_path, cal_i, cal_lambda)
+            plot_end = time.time()
+            print(plot_end - plot_start)
+            
+            ui.printf(f"图片保存成功，名称为{save_path}")
         
         self.tmpdata = (0, 0)
                 
@@ -126,7 +139,9 @@ class ThreadSingleScan(QThread):
         if cnt:
             ui.printf("单次扫描命令发送成功")
         
+        threadPlot.flag = 2
         click_Plot()
+        threadPlot.flag = 2
         
         print("单次扫描结束")
         
