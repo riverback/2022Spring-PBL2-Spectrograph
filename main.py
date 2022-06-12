@@ -75,10 +75,12 @@ class ThreadPlot(QThread):
             ui.printf("尝试绘制光谱图")
             start_time = time.ctime().replace(' ', '_').replace(':', '_')
             ly = threadPlot.data
-            cal_i = np.array([3240, 1422])
+            cal_i = np.array([2221+1700, 2221])
             # cal_i[0] = np.array([np.argmax(ly)])
             cal_i_blue = np.array([np.argmax(ly)])
-            print("######", cal_i_blue)
+            cal_i_blue_pd = ly[cal_i_blue]
+            
+            print("这里是 校准光的i和pd", cal_i_blue, cal_i_blue_pd)
             '''if cal_i.size > 1:
                 cal_i = np.array(cal_i[int(cal_i.size/2)])'''
             # cal_lambda = np.array([445.0*1e-9])
@@ -90,7 +92,9 @@ class ThreadPlot(QThread):
             lx_lambda = np.empty_like(ly)
             for i in range(lx_lambda.size):
                 lx_lambda[i] = map_fun(i)
-            save_path = f'results/spec_{start_time}.png'
+            save_path = f'Spec_results/spec_{start_time}.png'
+            
+            np.savetxt(f'Spec_results/spec_{start_time}.txt', np.array([lx_lambda, ly]))
             
             plot_start = time.time()
             save_image(lx_lambda, ly, save_path, cal_i, cal_lambda)
