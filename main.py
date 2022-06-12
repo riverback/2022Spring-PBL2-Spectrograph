@@ -75,13 +75,14 @@ class ThreadPlot(QThread):
             ui.printf("尝试绘制光谱图")
             start_time = time.ctime().replace(' ', '_').replace(':', '_')
             ly = threadPlot.data
-            cal_i = np.array([1480, 2846])
-            # cal_i = np.array([np.argmax(ly)])
-            print("######", cal_i)
+            cal_i = np.array([3240, 1422])
+            # cal_i[0] = np.array([np.argmax(ly)])
+            cal_i_blue = np.array([np.argmax(ly)])
+            print("######", cal_i_blue)
             '''if cal_i.size > 1:
                 cal_i = np.array(cal_i[int(cal_i.size/2)])'''
             # cal_lambda = np.array([445.0*1e-9])
-            cal_lambda = np.array([520.0*1e-9, 445*1e-9])
+            cal_lambda = np.array([445.0*1e-9, 520*1e-9])
             map_fun = Calibrate(cal_i, cal_lambda)
             if map_fun is None:
                 print("map_fun is None")

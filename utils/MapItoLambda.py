@@ -7,7 +7,6 @@ from sympy import solve, sin, cos, Symbol, re, acos
 D = 1 / 1200 * 1e-3  # 光栅常数 1/1200 mm
 DELTA_THETA = (12.5 / 4096) * sympy.pi / 180  # 指的是i每+1，对应的角度变化 单位是弧度
 
-
 def CirctoRad(theta_circ): return theta_circ / 180.0 * sympy.pi
 
 
@@ -15,10 +14,10 @@ def Calibrate(cal_i: np.ndarray, cal_lambda: np.ndarray):
     print("!!!")
     print(cal_i.shape)
     
-    def map_fun(i):
+    '''def map_fun(i):
         return 400 + i*0.05
     
-    return map_fun
+    return map_fun'''
     
     if cal_i.shape == (1, ):
         print("???")
@@ -52,9 +51,16 @@ def Calibrate(cal_i: np.ndarray, cal_lambda: np.ndarray):
         x = Symbol('x') # theta_0
         y = Symbol('y') # C, phi = 12.5/4096*i + C
 
-        C = solve(acos((cal_lambda[1]-cal_lambda[0])/(2*D*sin(((cal_i[1]-cal_i[0])*DELTA_THETA)/2)))-(cal_i[1]+cal_i[0])*DELTA_THETA/2-y)
+        print("这里是cal_lambda", cal_lambda)
+        print("这里是cal_i", cal_i)
+        print("这里是D", D)
+        print("这里是DELTA theta", DELTA_THETA)
+        
 
+        C = solve(acos((cal_lambda[1]-cal_lambda[0])/(2*D*sin(((cal_i[0]-cal_i[1])*DELTA_THETA)/2)))-(cal_i[1]+cal_i[0])*DELTA_THETA/2-y)
+        print("这里是方程解出来的C", C)
         theta_0 = solve(cal_lambda[0] - D*(sin(x)-sin(cal_i[0]*DELTA_THETA+C[0])))
+        print("这里是方程解出来的theta_0", theta_0)
 
         def map_fun(i):
             return D * (sin(theta_0[0]) - sin(DELTA_THETA*i + C[0]))

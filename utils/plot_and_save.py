@@ -20,6 +20,9 @@ def getRGB(dWave: float, maxPix=1, gamma=1):
     Returns:
         _type_: 波长对应颜色的rgb值
     """
+    
+    dWave = dWave * 1e9
+    
     waveArea = [380, 440, 490, 510, 580, 645, 780]
     minusWave = [0, 440, 440, 510, 510, 645, 780]
     deltWave = [1, 60, 50, 20, 70, 65, 35]

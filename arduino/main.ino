@@ -53,6 +53,8 @@ void loop()
     case SCAN_ONE_TIME:
         scan();
         command = STOP_COMMAND;
+        writeToDAC(START_VAL); //把镜子转到最小角度
+        mirrorstatus = MINIMUM_ANGLE;
         break;
     case SCAN_COMMAND:
         scan();
