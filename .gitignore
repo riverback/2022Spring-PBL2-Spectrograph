@@ -1,9 +1,11 @@
 .vscode/*
 ./vscode
 *.txt
+results/*
+results
 Spec_results/*
-*.png
 *.jpg
 *.jpeg
 *.npz
 *.pyc
+.vscode
