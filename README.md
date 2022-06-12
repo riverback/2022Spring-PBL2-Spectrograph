@@ -14,15 +14,15 @@ Python code by hhz
 python main.py
 ```
 
-![MainGUI](D:\pbl2\MainGUI.png)
+![MainGUI](https://github.com/riverback/2022Spring-PBL2-Spectrograph/blob/main/MainGUI.png)
 
 右下角显示 `serial open success`后可以正常使用
 
-![start_scan](D:\pbl2\start_scan.png)
+![start_scan](https://github.com/riverback/2022Spring-PBL2-Spectrograph/blob/main/%E5%BE%AA%E7%8E%AF%E6%89%AB%E6%8F%8F%E5%B9%B6%E7%94%BB%E5%9B%BE.png)
 
 循环扫描+画图：在点击**循环扫描**后，可在右下角观察到`开始循环扫描`，然后点击**画图**，便可以实时显示光电二极管的输出数据。
 
-![循环扫描并画图](D:\pbl2\循环扫描并画图.png)
+![循环扫描并画图](https://github.com/riverback/2022Spring-PBL2-Spectrograph/blob/main/%E5%BE%AA%E7%8E%AF%E6%89%AB%E6%8F%8F%E5%B9%B6%E7%94%BB%E5%9B%BE.png)
 
 此时点击**暂停扫描**，便可以停止扫描，面镜旋转到最大或者最小位置，当右下角显示`扫描已暂停`，可以进行后续操作。
 
