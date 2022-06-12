@@ -6,3 +6,4 @@ Spec_results/*
 *.jpg
 *.jpeg
 *.npz
+*.pyc
