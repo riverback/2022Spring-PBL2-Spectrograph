@@ -14,6 +14,12 @@ def CirctoRad(theta_circ): return theta_circ / 180.0 * sympy.pi
 def Calibrate(cal_i: np.ndarray, cal_lambda: np.ndarray):
     print("!!!")
     print(cal_i.shape)
+    
+    def map_fun(i):
+        return 400 + i*0.05
+    
+    return map_fun
+    
     if cal_i.shape == (1, ):
         print("???")
         """
