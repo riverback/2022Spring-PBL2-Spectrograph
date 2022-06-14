@@ -20,9 +20,9 @@ def getRGB(dWave: float, maxPix=1, gamma=1):
     Returns:
         _type_: 波长对应颜色的rgb值
     """
-    
+
     dWave = dWave * 1e9
-    
+
     waveArea = [380, 440, 490, 510, 580, 645, 780]
     minusWave = [0, 440, 440, 510, 510, 645, 780]
     deltWave = [1, 60, 50, 20, 70, 65, 35]
@@ -59,22 +59,7 @@ def drawSpec():
     plt.show()
 
 
-def smooth_xy(lx: np.ndarray, ly: np.ndarray):
-    """数据平滑处理
-
-    Args:
-        lx (np.ndarray): x轴数据
-        ly (np.ndarray): y轴数据
-    """
-
-    x_smooth = np.linspace(lx.min(), ly.min(), 400)
-    y_smooth = make_interp_spline(lx, ly)(x_smooth)
-
-    return (x_smooth, y_smooth)
-
-
-
-def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i, cal_lambda):
+def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None):
     """画图并保存
 
     Args:
@@ -84,32 +69,89 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i, cal_lambda):
         cal_i (_type_): 校准的激光的i 方便多次实验比较
         cal_lambda (_type_): 校准激光的λ
     """
-    plt.figure()
+
+    # PD响应曲线
+    def PD_eff(wave):
+        if 400.0 <= wave and wave < 500:
+            return 0.3 - 0.0012 * (500-wave)
+        elif wave < 600:
+            return 0.41 - 0.0011 * (600-wave)
+        elif wave < 700:
+            return 0.48 - 0.0007 * (700-wave)
+        else:
+            raise NotImplementedError('目前设计的波长范围肯定不会超过700nm 不会低于400nm')
+
+    # 光栅效率参数
+    efficiency_x = []  # 波长 单位为nm
+    efficiency_y = []  # 效率 单位为100% 使用的时候需要除100
+
+    with open('utils\gatecoe.txt', 'r') as f:
+        Data = f.readlines()
+        for data in Data:
+            wave = float(data.strip('\n').split(',')[0])
+            efficiency = float(data.strip('\n').split(',')[1])
+            efficiency_x.append(wave)
+            efficiency_y.append(efficiency)
+
+    # gate_eff = {k:v for k, v in zip(efficiency_x, efficiency_y)}
+    # 转换成ndarray在查找的时候会快一些
+    efficiency_x = np.array(efficiency_x)
+    efficiency_y = np.array(efficiency_y)
+
+    def Gate_eff(wave):
+        idx1 = np.where(efficiency_x > wave)[0][0]
+
+        e1, e2 = efficiency_y[idx1], efficiency_y[idx1-1]
+        return (e1+e2) / 2 / 100
+
+    lth = lx.argsort()  # 返回横轴坐标中从小到大的索引值
+
+    x_lth = np.empty_like(lx)
+    y_lth = np.empty_like(ly)
+    # 将读取到的光谱数据按照波长从小到大进行排序 便于之后的求平均值处理
+    for i in range(len(x_lth)):
+        x_lth[i] = lx[lth[i]] * 1e9  # 单位nm
+        y_lth[i] = ly[lth[i]]
+        y_lth[i] = y_lth[i] / PD_eff(x_lth[i]) / \
+            Gate_eff(x_lth[i]) / 1024*5.0  # 单位V
+
+    '''但这种做法并不能很好解决我们的数据是上下波动的情况
+    # 平滑降噪操作 使用Savitzky-Golay方法
+    from scipy.signal import savgol_filter
+    y_lth = savgol_filter(y_lth, 11, 2)
+    '''
+
+    # 尝试实现一个一维卷积 实现每十个数据求平均值
+    def np_move_avg(arr, N=25, mode='same'):
+        return (np.convolve(arr, np.ones((N,))/N, mode=mode))
+
+
+    y_lth = np_move_avg(y_lth)
     
-    lth = lx.argsort() # 返回横轴坐标中从小到大的索引值
-    
+    ### 尝试在平均降噪之后，在通过savitzky-golay进行一次平滑操作
+    from scipy.signal import savgol_filter
+    y_lth = savgol_filter(y_lth, 11, 2)
+
+    plt.figure(figsize=(18.0, 15))
+
     for i in range(len(lth)-1):
-        rgbs = getRGB((lx[lth[i]]+lx[lth[i+1]])/2)
-        plt.plot(np.array([lx[lth[i]], lx[lth[i+1]]]), np.array([ly[lth[i]], ly[lth[i+1]]]), color=rgbs)
-        
-    plt.xlabel('lambda')
-    plt.ylabel('relative intensity')
+        rgbs = getRGB((x_lth[i]+x_lth[i+1])/2*1e-9)
+        plt.plot(np.array([x_lth[i], x_lth[i+1]]),
+                 np.array([y_lth[i], y_lth[i+1]]), color=rgbs)
+
+    plt.xlabel(
+        'wavelength: {:.1f}-{:.1f}nm'.format(np.min(x_lth), np.max(x_lth)))
+    plt.ylabel('relative intensity/V')
     # 在图片标题处显示校准所用的激光的信息
-    plt.title(f"cal_i_1{cal_i[0]}-cal_lambda_1{cal_lambda[1]}-cal_i_2{cal_i[1]}-cal_lambda_2{cal_lambda[1]}")
-    
-    
-    
+    if cal_i and cal_lambda:
+        plt.title(
+            f"cal_i_1{cal_i[0]}-cal_lambda_1{cal_lambda[1]}-cal_i_2{cal_i[1]}-cal_lambda_2{cal_lambda[1]}")
+
     plt.savefig(path)
     plt.show()
 
 
 if __name__ == '__main__':
-    # drawSpec()
-    lx = np.array([405.0 + i * 0.5 for i in range(800)])
-    ly = np.random.rand(1000)
-    plt.figure()
-    for i in range(len(lx)-1):
-        rgb = getRGB((lx[i]+lx[i+1])/2)
-        plt.plot(lx[i:i+2], ly[i:i+2], color=rgb, label='test')
-    
-    plt.show()
+
+    data = np.loadtxt(r'D:\pbl2\results\NFC芒果汁.txt')
+    save_image(data[0, :], data[1, :], os.path.abspath('./test_NFC芒果_补偿_平均25_savgol'))
