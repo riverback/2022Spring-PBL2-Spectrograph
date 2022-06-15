@@ -17,7 +17,7 @@ dirname = os.path.dirname(qt5_applications.__file__)
 plugin_path = os.path.join(dirname, 'Qt', 'plugins', 'platforms')
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
 
-# matplotlib.use('agg')
+matplotlib.use('agg')
 
 class ThreadPlot(QThread):
     """画图线程"""
@@ -70,26 +70,35 @@ class ThreadPlot(QThread):
             ui.printf("尝试绘制光谱图")
             start_time = time.ctime().replace(' ', '_').replace(':', '_')
             ly = threadPlot.data
-            cal_i = np.array([2221+1700, 2221])
+            
+            ####
+            def np_move_avg(arr, N=25, mode='same'):
+                return (np.convolve(arr, np.ones((N,))/N, mode=mode))
+            
+            ly__ = np_move_avg(ly)
+            cal_i_max = np.array([np.argmax(ly__)])
+            cal_pd_max = ly__[cal_i_max]
+            
+            cal_i = np.array([1845+1700, 1845])
             # cal_i[0] = np.array([np.argmax(ly)])
-            cal_i_blue = np.array([np.argmax(ly)])
-            cal_i_blue_pd = ly[cal_i_blue]
-            ui.printf("这里是 校准光的i和pd, {}, {}".format(cal_i_blue, cal_i_blue_pd))
+            '''cal_i_blue = np.array([np.argmax(ly)])
+            cal_i_blue_pd = ly[cal_i_blue]'''
+            ui.printf("这里是 校准光的i和pd, {}, {}".format(cal_i_max, cal_pd_max))
             cal_lambda = np.array([445.0*1e-9, 520*1e-9])
-            map_fun = Calibrate(cal_i, cal_lambda)
+            map_fun, C, theta_0 = Calibrate(cal_i, cal_lambda)
             if map_fun is None:
                 print("map_fun is None")
                 return
             lx_lambda = np.empty_like(ly)
             for i in range(lx_lambda.size):
                 lx_lambda[i] = map_fun(i)
-            save_path = f'Spec_results/spec_{start_time}.png'
+            save_path = f'results/spec_{start_time}.png'
 
             # 原始数据 波长和强度 没有经过排序和强度补偿
             np.savetxt(
-                f'Spec_results/spec_{start_time}.txt', np.array([lx_lambda, ly]))
+                f'results/spec_{start_time}.txt', np.array([lx_lambda, ly]))
 
-            save_image(lx_lambda, ly, save_path)
+            save_image(lx_lambda, ly, C=C, theta_0=theta_0, path=save_path, map_fun=map_fun)
 
             ui.printf(f"图片保存成功，名称为{save_path}")
 

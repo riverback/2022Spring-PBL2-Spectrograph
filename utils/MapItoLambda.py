@@ -65,7 +65,7 @@ def Calibrate(cal_i: np.ndarray, cal_lambda: np.ndarray):
         def map_fun(i):
             return D * (sin(theta_0[0]) - sin(DELTA_THETA*i + C[0]))
 
-        return map_fun
+        return map_fun, C[0], theta_0[0]
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+from math import cos, sin
 from scipy.interpolate import make_interp_spline
 import numpy as np
 from matplotlib import pyplot as plt
@@ -59,11 +60,11 @@ def drawSpec():
     plt.show()
 
 
-def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None):
+def save_image(lx: np.ndarray, ly: np.ndarray, path, C, theta_0, cal_i=None, cal_lambda=None, map_fun=None):
     """画图并保存
 
     Args:
-        lx (_type_): 横轴数据 已经转换为λ了 但不是按照大小顺序
+        lx (_type_): 横轴数据 已经转换为λ了 但不是按照大小顺序 也就是说此时的idx仍代表原始的i
         ly (_type_): 纵轴数据
         path (_type_): 保存路径 xxx.png
         cal_i (_type_): 校准的激光的i 方便多次实验比较
@@ -104,6 +105,35 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None
         e1, e2 = efficiency_y[idx1], efficiency_y[idx1-1]
         return (e1+e2) / 2 / 100
 
+    def diffraction_eff(i, D=1/1200*1e-3, C=C, theta_0=theta_0, map_fun=map_fun, N=8000):
+        """衍射效率补偿
+
+        Args:
+            i (_type_): 计算phi时候用到的i
+            D (_type_, optional): 光栅常数. Defaults to 1/1200*1e-3.
+            C (_type_, optional): 计算phi时候的偏移量. Defaults to C.
+            theta_0 (_type_, optional): 光栅公式里的theta_0. Defaults to theta_0.
+            map_fun (_type_, optional): 映射函数 Defaults to map_fun.
+            N (int, optional): 光斑照射到的线数(估计值) Defaults to 8000.
+
+        Returns:
+            _type_: _description_
+        """
+        lambda_ = map_fun(i)
+        pi = 3.1415926
+        k = 12.5 / 4096 * pi / 180
+        theta = k * float(i) + float(C) + 35. / 180 * pi - float(theta_0)
+        alpha = pi / lambda_ * sin(theta) * D / (2 * cos(17.5/180*pi))
+        # beta = pi / lambda_ * sin(theta) * D
+        # eff = (sin(alpha)**2)*(sin(N*beta)**2) / (alpha**2) / (sin(beta)**2)
+        eff = (sin(alpha)**2) / (alpha**2)
+        '''if eff < 0.01:
+            print('alpha: {:.4f}, sin(alpha): {:.4f}'.format(float(alpha), float(sin(alpha))))
+            # print('beta: {:.4f}, sin(N*beta): {:.4f}'.format(float(beta), float(sin(N*beta))))'''
+        if float(alpha**2) < 1e-4:
+            eff = 1.
+        return eff
+
     lth = lx.argsort()  # 返回横轴坐标中从小到大的索引值
 
     x_lth = np.empty_like(lx)
@@ -112,8 +142,7 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None
     for i in range(len(x_lth)):
         x_lth[i] = lx[lth[i]] * 1e9  # 单位nm
         y_lth[i] = ly[lth[i]]
-        y_lth[i] = y_lth[i] / PD_eff(x_lth[i]) / \
-            Gate_eff(x_lth[i]) / 1024*5.0  # 单位V
+        y_lth[i] = y_lth[i] / PD_eff(x_lth[i]) / Gate_eff(x_lth[i]) / diffraction_eff(i) / 1024*5.0  # 单位V
 
     '''但这种做法并不能很好解决我们的数据是上下波动的情况
     # 平滑降噪操作 使用Savitzky-Golay方法
@@ -125,10 +154,9 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None
     def np_move_avg(arr, N=25, mode='same'):
         return (np.convolve(arr, np.ones((N,))/N, mode=mode))
 
-
     y_lth = np_move_avg(y_lth)
-    
-    ### 尝试在平均降噪之后，在通过savitzky-golay进行一次平滑操作
+
+    # 尝试在平均降噪之后，在通过savitzky-golay进行一次平滑操作
     from scipy.signal import savgol_filter
     y_lth = savgol_filter(y_lth, 11, 2)
 
@@ -154,4 +182,5 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, cal_i=None, cal_lambda=None
 if __name__ == '__main__':
 
     data = np.loadtxt(r'D:\pbl2\results\NFC芒果汁.txt')
-    save_image(data[0, :], data[1, :], os.path.abspath('./test_NFC芒果_补偿_平均25_savgol'))
+    save_image(data[0, :], data[1, :], os.path.abspath(
+        './test_NFC芒果_补偿_平均25_savgol'))
