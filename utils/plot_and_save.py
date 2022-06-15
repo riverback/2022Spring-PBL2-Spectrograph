@@ -150,15 +150,17 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, C, theta_0, cal_i=None, cal
     y_lth = savgol_filter(y_lth, 11, 2)
     '''
 
+    
     # 尝试实现一个一维卷积 实现每十个数据求平均值
     def np_move_avg(arr, N=25, mode='same'):
         return (np.convolve(arr, np.ones((N,))/N, mode=mode))
 
     y_lth = np_move_avg(y_lth)
-
+    
     # 尝试在平均降噪之后，在通过savitzky-golay进行一次平滑操作
     from scipy.signal import savgol_filter
     y_lth = savgol_filter(y_lth, 11, 2)
+    
 
     plt.figure(figsize=(18.0, 15))
 
@@ -180,7 +182,9 @@ def save_image(lx: np.ndarray, ly: np.ndarray, path, C, theta_0, cal_i=None, cal
 
 
 if __name__ == '__main__':
-
-    data = np.loadtxt(r'D:\pbl2\results\NFC芒果汁.txt')
-    save_image(data[0, :], data[1, :], os.path.abspath(
-        './test_NFC芒果_补偿_平均25_savgol'))
+    from MapItoLambda import Calibrate
+    cal_i = np.array([1845+1700, 1845])
+    cal_lambda = np.array([445.0*1e-9, 520*1e-9])
+    map_fun, C, theta_0 = Calibrate(cal_i, cal_lambda)
+    data = np.loadtxt(r'D:\pbl2\results\绿光校准.txt')
+    save_image(data[0, :], data[1, :], path=os.path.abspath('./平均滤波和s-g滤波deriv=1.png'), theta_0=theta_0, C=C, map_fun=map_fun)
