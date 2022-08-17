@@ -6,7 +6,7 @@ Arduino code by ywh
 Python code by hhz 
     email: hhz_pku@163.com
 
-More details about our prototype can be found in ![report]()
+More details about our prototype can be found in ![report](https://riverback.github.io/FileStorage/Spectrograph.pdf)
 
 [Usage]
 
