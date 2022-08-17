@@ -8,6 +8,8 @@ Python code by hhz
 
 More details about our prototype can be found in [report](https://riverback.github.io/FileStorage/Spectrograph.pdf)
 
+[![OSCS Status](https://www.oscs1024.com/platform/badge/riverback/2022Spring-PBL2-Spectrograph.svg?size=small)](https://www.oscs1024.com/project/riverback/2022Spring-PBL2-Spectrograph?ref=badge_small)
+
 [Usage]
 
 运行(Run)：
